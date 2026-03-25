@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/timholm/forge-oracle/internal/types"
+	"github.com/timholm/forge-oracle/pkg/types"
 )
 
 // Config controls RetrieverGuard behavior.

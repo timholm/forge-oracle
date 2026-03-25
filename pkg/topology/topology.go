@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/timholm/forge-oracle/internal/types"
+	"github.com/timholm/forge-oracle/pkg/types"
 )
 
 // phaseModels lists the available models for each phase.

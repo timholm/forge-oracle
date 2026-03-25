@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/timholm/forge-oracle/internal/calibrate"
-	"github.com/timholm/forge-oracle/internal/diagnose"
-	"github.com/timholm/forge-oracle/internal/guard"
-	"github.com/timholm/forge-oracle/internal/simulate"
-	"github.com/timholm/forge-oracle/internal/types"
+	"github.com/timholm/forge-oracle/pkg/calibrate"
+	"github.com/timholm/forge-oracle/pkg/diagnose"
+	"github.com/timholm/forge-oracle/pkg/guard"
+	"github.com/timholm/forge-oracle/pkg/simulate"
+	"github.com/timholm/forge-oracle/pkg/types"
 )
 
 func main() {

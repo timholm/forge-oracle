@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/timholm/forge-oracle/internal/types"
+	"github.com/timholm/forge-oracle/pkg/types"
 )
 
 // pattern matchers for common Go build/test errors.

@@ -11,7 +11,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/timholm/forge-oracle/internal/types"
+	"github.com/timholm/forge-oracle/pkg/types"
 )
 
 // languageSupport maps languages to a support quality score (how well LLMs handle them).

@@ -11,7 +11,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/timholm/forge-oracle/internal/types"
+	"github.com/timholm/forge-oracle/pkg/types"
 )
 
 // categoryBudgets maps product categories to their complexity budgets.
