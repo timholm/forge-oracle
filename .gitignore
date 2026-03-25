@@ -1,0 +1,11 @@
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+node_modules/
+.env
+*.log
+tmp/

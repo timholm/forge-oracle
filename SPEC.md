@@ -1,0 +1,48 @@
+# forge-oracle
+
+An intelligent retrieval, simulation, and quality-assurance layer that wraps every stage of the factory pipeline. It defends paper retrieval from poisoned or low-quality sources using probe-gradient reranking, discovers implicit cross-paper connections beyond keyword similarity, simulates build actions before execution to predict failures, constructs fault trees for targeted auto-retry instead of blind retries, optimizes the multi-agent topology between Opus and Sonnet sessions, enforces data provenance so the synthesizer weights trusted sources higher, and calibrates product complexity to match target audience. The result: better papers in, better specs generated, fewer wasted build cycles, and higher audit scores out.
+
+**Language:** go
+
+## Architecture
+
+Forge-oracle is a Go library integrated directly into the factory-v2 binary as a new internal package (internal/oracle). It exposes a middleware-style API where each pipeline stage (discover, research, synthesize, build, validate, audit) can be wrapped with oracle hooks. Core components: (1) RetrieverGuard — wraps the discover and research HTTP calls, applies probe-gradient reranking to arXiv results and GitHub search results, detects implicit cross-paper connections via embedding comparison with reasoning-aware similarity, and tags all retrieved context with provenance tiers. Stores embeddings in the existing pgvector-enabled Postgres. (2) WorldModelSimulator — a pre-flight layer before Claude CLI invocations that uses a distilled prompt-to-outcome predictor (backed by a fast Haiku call) to estimate whether the planned build action will succeed; returns a confidence score and suggested prompt rewrites. (3) FaultTreeBuilder — parses build/test failure output into a structured fault tree (AND/OR gates over failure causes), then generates a targeted retry prompt that addresses the diagnosed root cause. (4) TopologyOptimizer — after each pipeline run, logs the full trace (prompts, responses, scores) and runs contrastive analysis to update the agent topology document that controls Opus/Sonnet routing, context window allocation, and turn budgets. (5) ComplexityCalibrator — analyzes the ProductSpec against a complexity budget derived from the product category and outputs a scoping recommendation that the synthesizer incorporates. All components share a common trace log in Postgres for observability and topology refinement.
+
+## Features
+
+- Probe-gradient reranking of arXiv and GitHub search results to filter poisoned or low-quality retrieval candidates
+- Implicit technique-connection detection across papers using reasoning-aware similarity beyond keyword matching
+- Provenance-tiered context tagging (peer-reviewed, high-star repo, unverified) injected into synthesis prompts
+- Pre-flight build simulation via distilled world model that predicts build success probability before spending Sonnet turns
+- Structured fault tree construction from build/test failures with targeted retry prompt generation
+- Iterative multi-agent topology optimization that refines Opus/Sonnet routing and turn budgets across pipeline runs
+- Complexity calibration that scopes generated products appropriately to avoid over-engineering and improve audit scores
+- Full trace logging to Postgres for contrastive analysis and topology evolution
+- Configurable confidence thresholds for pre-flight gates (skip simulation for high-confidence builds)
+- CLI subcommand (factory-v2 oracle status) showing retrieval quality metrics, simulation accuracy, and topology drift over time
+
+## Research Papers (implement techniques from ALL of these)
+
+1. **Describe-Then-Act: Proactive Agent Steering via Distilled Language-Action World Models** (arXiv: 2603.23149)
+2. **ABSTRAL: Automatic Design of Multi-Agent Systems Through Iterative Refinement and Topology Optimization** (arXiv: 2603.22791)
+3. **JFTA-Bench: Evaluate LLM's Ability of Tracking and Analyzing Malfunctions Using Fault Trees** (arXiv: 2603.22978)
+4. **Where Experts Disagree, Models Fail: Detecting Implicit Legal Citations in French Court Decisions** (arXiv: 2603.22973)
+5. **Chain-of-Authorization: Internalizing Authorization into Large Language Models via Reasoning Trajectories** (arXiv: 2603.22869)
+6. **Minibal: Balanced Game-Playing Without Opponent Modeling** (arXiv: 2603.23059)
+7. **ProGRank: Probe-Gradient Reranking to Defend Dense-Retriever RAG from Corpus Poisoning** (arXiv: 2603.22934)
+
+## Technique Map (how each technique is used)
+
+- **language-action-world-model**: Before each Claude Code CLI invocation in the build phase, a lightweight distilled world model simulates the likely output (scaffold structure, test coverage, dependency choices) from the prompt and spec. Actions predicted to fail validation or produce low-audit-score artifacts are rewritten before execution, cutting wasted Sonnet turns by short-circuiting doomed build attempts.
+- **multi-agent-topology-optimization**: The factory uses Opus for synthesis and Sonnet for building, but the handoff topology is static. ABSTRAL's approach treats the agent wiring as an evolvable natural-language document: after each pipeline run, contrastive trace analysis compares successful vs failed runs and refines the prompt routing, context-sharing boundaries, and turn budgets between agents. The topology document is versioned and human-inspectable.
+- **fault-tree-analysis**: When a build fails (test failure, vet error, missing dependency), instead of blind auto-retry the system constructs a textual fault tree from the error output. The fault tree decomposes the failure into root causes (e.g., missing import → wrong module path → spec ambiguity) and generates a targeted patch prompt for the retry, so each retry addresses a specific diagnosed fault rather than re-running the same prompt.
+- **implicit-citation-detection**: During the discover phase, papers are clustered not just by keyword/category similarity but by detecting implicit technique reuse — where one paper applies a method from another without explicit citation. This surfaces hidden connections between papers across subfields, enabling the factory to find novel technique combinations that keyword search alone would miss.
+- **chain-of-authorization**: When the synthesizer pulls context from retrieved papers and GitHub repos, Chain-of-Authorization reasoning trajectories tag each piece of context with a provenance tier: peer-reviewed paper content is tier-1, high-star repos are tier-2, and unverified sources are tier-3. The synthesis prompt includes these tiers so Claude weights authoritative sources higher and flags when a spec relies heavily on low-tier evidence.
+- **balanced-calibration**: Inspired by Minibal's approach of calibrating AI strength to be educational rather than overwhelming, the spec generator includes a complexity budget derived from the target audience and deployment context. Instead of always maximizing technical sophistication, the calibrator ensures generated products are appropriately scoped — a CLI tool stays simple, a library gets proper abstractions — improving audit scores by avoiding over-engineering.
+- **probe-gradient-reranking**: The paper and repo retrieval pipeline is defended against low-quality or misleading results using probe-gradient reranking. After initial dense retrieval, each candidate is scored by probing how much it shifts the downstream generation distribution. Candidates that would inject irrelevant or contradictory information into the spec are demoted, ensuring the RAG context fed to Opus is clean and coherent.
+
+## Reference Repos (learn from these, improve on them)
+
+1. [ArcherFMY/Paper_Reading_List](https://github.com/ArcherFMY/Paper_Reading_List)
+2. [HenryNdubuaku/maths-cs-ai-compendium](https://github.com/HenryNdubuaku/maths-cs-ai-compendium)
+
